@@ -92,11 +92,11 @@ public class CrossBrowserSuiteTest extends BaseTest {
     }
     /**/
     
-    /*/
+    /**/
     @Test
     @Order(5)
-    @DisplayName("Safari remoto (VM)")
-    void testInSafariVM() throws InterruptedException {
+    @DisplayName("Safari remoto")
+    void testInSafari() throws InterruptedException {
         runRemoteTest();
     }
     /**/
@@ -149,21 +149,33 @@ public class CrossBrowserSuiteTest extends BaseTest {
     }
 
     private void runRemoteTest() throws InterruptedException {
-        currentBrowser = "safari_vm";
-        BaseDriver driverManager = new RemoteDriverManager();
-
-        try {
-            driver = driverManager.createDriver();
-            String baseUrl = remoteConfig.get("base.url");
-
-            ExtentTest safariTest = test.createNode("[REMOTE] Safari VM");
-            StepsFlow steps = new StepsFlow(driver, currentBrowser, safariTest);
-            steps.executeFlow(baseUrl);
-        } catch (Exception e) {
-            test.fail("[ERROR] Error en Safari remoto (VM): " + e.getMessage());
-            throw e;
-        } finally {
-            if (driver != null) driver.quit();
+        String baseUrl = remoteConfig.get("base.url");
+        for (DeviceProfile device : DeviceProfile.values()) {
+            if (device == DeviceProfile.MOBILE) {
+                System.out.println("[INFO] Omitiendo Safari remoto MOBILE");
+                continue;
+            }
+            currentBrowser = "safari_cloud_" + device.name().toLowerCase();
+            System.out.println("\n[INFO] Ejecutando Safari remoto -> " + device.name());
+            ExtentTest deviceTest = test.createNode("[REMOTE] Safari - " + device.name());
+            BaseDriver driverManager = new RemoteDriverManager(device);
+            try {
+                driver = driverManager.createDriver();
+                StepsFlow steps = new StepsFlow(driver, currentBrowser, deviceTest);
+                steps.executeFlow(baseUrl);
+            } catch (Exception e) {
+                deviceTest.fail(
+                    "[ERROR] Error en Safari remoto " + device.name() + ": " + e.getMessage()
+                );
+                throw e;
+            } finally {
+                if (driver != null) {
+                    driver.quit();
+                    System.out.println(
+                        "[INFO] Finalizó Safari remoto → " + device.name()
+                    );
+                }
+            }
         }
     }
 }
