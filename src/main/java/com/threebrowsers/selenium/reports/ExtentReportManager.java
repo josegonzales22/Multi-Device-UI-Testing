@@ -3,6 +3,7 @@ package com.threebrowsers.selenium.reports;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -12,9 +13,6 @@ public class ExtentReportManager {
 
     public static ExtentReports createInstance(String browserName) {
         if (extent != null) return extent;
-
-        // Forzar UTF-8 globalmente
-        System.setProperty("file.encoding", "UTF-8");
 
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(new Date());
         String safeBrowserName = browserName != null ? browserName.replaceAll("[^a-zA-Z0-9]", "_") : "general";

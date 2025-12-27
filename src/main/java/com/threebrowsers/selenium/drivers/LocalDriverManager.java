@@ -1,9 +1,8 @@
 package com.threebrowsers.selenium.drivers;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import com.threebrowsers.selenium.drivers.LocalDriverManagerMac;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -32,13 +31,13 @@ public class LocalDriverManager extends BaseDriver {
         boolean isMac = os.contains("mac");
         switch (browser) {
             case "chrome" -> {
-                if (isMac){
+                if (isMac) {
                     WebDriverManager.chromedriver()
-                    .setup();
-                }else{
+                            .setup();
+                } else {
                     WebDriverManager.chromedriver()
-                        .browserVersion("latest")
-                        .setup();
+                            .browserVersion("latest")
+                            .setup();
                 }
                 ChromeOptions chromeOptions = new ChromeOptions();
                 java.util.Map<String, Object> prefs = new java.util.HashMap<>();
@@ -51,7 +50,8 @@ public class LocalDriverManager extends BaseDriver {
 
                 if (device != null) {
                     chromeOptions.addArguments("--user-agent=" + device.getUserAgent());
-                    chromeOptions.addArguments("--window-size=" + device.getResolution());
+                    String resolution = device.getResolution().replace("x", ",");
+                    chromeOptions.addArguments("--window-size=" + resolution);
                 }
 
                 if (headless) {
@@ -65,15 +65,15 @@ public class LocalDriverManager extends BaseDriver {
             case "edge" -> {
                 try {
                     URL driverUrl = new URL("https://msedgedriver.microsoft.com/");
-                    if (isMac){
+                    if (isMac) {
                         WebDriverManager.edgedriver()
-                        .driverRepositoryUrl(driverUrl)
-                        .setup();
-                    }else {
+                                .driverRepositoryUrl(driverUrl)
+                                .setup();
+                    } else {
                         WebDriverManager.edgedriver()
-                            .browserVersion("latest")
-                            .driverRepositoryUrl(driverUrl)
-                            .setup();
+                                .browserVersion("latest")
+                                .driverRepositoryUrl(driverUrl)
+                                .setup();
                     }
                 } catch (MalformedURLException e) {
                     throw new RuntimeException("[ERROR] URL mal formada para el repositorio del Edge driver.", e);
@@ -88,7 +88,8 @@ public class LocalDriverManager extends BaseDriver {
 
                 if (device != null) {
                     edgeOptions.addArguments("--user-agent=" + device.getUserAgent());
-                    edgeOptions.addArguments("--window-size=" + device.getResolution());
+                    String resolution = device.getResolution().replace("x", ",");
+                    edgeOptions.addArguments("--window-size=" + resolution);
                 }
 
                 if (headless) {
@@ -100,9 +101,9 @@ public class LocalDriverManager extends BaseDriver {
             }
 
             case "firefox" -> {
-                if (isMac){
+                if (isMac) {
                     WebDriverManager.firefoxdriver().setup();
-                }else{
+                } else {
                     WebDriverManager.firefoxdriver().browserVersion("latest").setup();
                 }
                 FirefoxOptions firefoxOptions = new FirefoxOptions();
@@ -116,13 +117,13 @@ public class LocalDriverManager extends BaseDriver {
 
                     if (headless) {
                         try {
-                            String[] resolution = device.getResolution().split(",");
+                            String[] resolution = device.getResolution().split("x");
                             if (resolution.length == 2) {
                                 firefoxOptions.addArguments("--width=" + resolution[0]);
                                 firefoxOptions.addArguments("--height=" + resolution[1]);
                             } else {
                                 System.err.println("[WARN] Resolución inválida para " + device.name() +
-                                                ": " + device.getResolution());
+                                        ": " + device.getResolution());
                             }
                         } catch (Exception e) {
                             System.err.println("[WARN] No se pudo aplicar resolución headless en Firefox: " + e.getMessage());
@@ -138,7 +139,7 @@ public class LocalDriverManager extends BaseDriver {
 
                 if (device != null && !headless) {
                     try {
-                        String[] resolution = device.getResolution().split(",");
+                        String[] resolution = device.getResolution().split("x");
                         int width = Integer.parseInt(resolution[0]);
                         int height = Integer.parseInt(resolution[1]);
                         driver.manage().window().setSize(new Dimension(width, height));
