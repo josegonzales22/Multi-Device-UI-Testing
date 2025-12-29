@@ -1,6 +1,8 @@
 package com.threebrowsers.selenium.pages;
 
-import org.openqa.selenium.*;
+import com.threebrowsers.selenium.utils.Logs;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 public class NavigatePage extends BasePage {
     // Selectores corregidos y optimizados
@@ -15,7 +17,7 @@ public class NavigatePage extends BasePage {
 
     public void clickMenu() {
         safeClick(menuButton);
-        System.out.println("[INFO] Interacción con botón de menú");
+        Logs.info("Interacción con botón de menú");
     }
 
     public void goToComponentsPage() {
@@ -33,5 +35,5 @@ public class NavigatePage extends BasePage {
         waitForElementToLoad(contentButtonPage, "Contenido");
     }
 
-    
+
 }

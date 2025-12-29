@@ -3,6 +3,7 @@ package com.threebrowsers.selenium.reports;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
+import com.threebrowsers.selenium.utils.Logs;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,14 +33,14 @@ public class ExtentReportManager {
         extent.setSystemInfo("Browser", safeBrowserName);
         extent.setSystemInfo("Project", "Multi Device UI Testing");
 
-        System.out.println("[INFO] Reporte creado: " + reportPath);
+        Logs.info("Reporte creado: " + reportPath);
         return extent;
     }
 
     public static void closeReport() {
         if (extent != null) {
             extent.flush();
-            System.out.println("[INFO] Reporte cerrado correctamente.");
+            Logs.info("Reporte cerrado correctamente.");
             extent = null;
         }
     }

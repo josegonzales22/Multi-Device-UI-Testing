@@ -4,14 +4,14 @@ import annotations.browsers.*;
 import annotations.devices.Desktop;
 import annotations.devices.Mobile;
 import annotations.devices.Tablet;
-import com.threebrowsers.selenium.drivers.*;
+import com.threebrowsers.selenium.drivers.BaseDriver;
+import com.threebrowsers.selenium.drivers.DeviceProfile;
+import com.threebrowsers.selenium.drivers.LocalDriverManager;
+import com.threebrowsers.selenium.drivers.RemoteDriverManager;
 import org.junit.jupiter.api.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CrossBrowserSuiteTest extends BaseTest {
-    // -------------------------------------------------
-    // Tests principales
-    // -------------------------------------------------
     @Test
     @Order(1)
     @Chrome
@@ -127,9 +127,13 @@ public class CrossBrowserSuiteTest extends BaseTest {
     @DisplayName("Safari Desktop")
     void testSafariDesktop() throws InterruptedException {
         String currentBrowser = "safari";
-        isMacOS();
         DeviceProfile device = DeviceProfile.DESKTOP;
-        BaseDriver driverManager = new LocalDriverManagerMac("safari", false, device);
+
+        if (!isMacOS()) return;
+        BaseDriver driverManager =
+                new com.threebrowsers.selenium.drivers.mac.LocalDriverManagerMac(
+                        "safari", false, device);
+
         executeTest(currentBrowser, device, driverManager);
     }
 
@@ -141,9 +145,13 @@ public class CrossBrowserSuiteTest extends BaseTest {
     @DisplayName("Safari Tablet")
     void testSafariTablet() throws InterruptedException {
         String currentBrowser = "safari";
-        isMacOS();
         DeviceProfile device = DeviceProfile.TABLET;
-        BaseDriver driverManager = new LocalDriverManagerMac("safari", false, device);
+
+        if (!isMacOS()) return;
+        BaseDriver driverManager =
+                new com.threebrowsers.selenium.drivers.mac.LocalDriverManagerMac(
+                        "safari", false, device);
+
         executeTest(currentBrowser, device, driverManager);
     }
 

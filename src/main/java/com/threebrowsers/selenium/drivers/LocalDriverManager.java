@@ -1,5 +1,6 @@
 package com.threebrowsers.selenium.drivers;
 
+import com.threebrowsers.selenium.utils.Logs;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
@@ -59,7 +60,8 @@ public class LocalDriverManager extends BaseDriver {
                 }
 
                 driver = new ChromeDriver(chromeOptions);
-                System.out.println("[INFO] Chrome lanzado con perfil: " + device.name());
+                Logs.info("Chrome lanzado con perfil: " + device.name());
+                break;
             }
 
             case "edge" -> {
@@ -97,7 +99,8 @@ public class LocalDriverManager extends BaseDriver {
                 }
 
                 driver = new EdgeDriver(edgeOptions);
-                System.out.println("[INFO] Edge lanzado con perfil: " + device.name());
+                Logs.info("Edge lanzado con perfil: " + device.name());
+                break;
             }
 
             case "firefox" -> {
@@ -122,11 +125,10 @@ public class LocalDriverManager extends BaseDriver {
                                 firefoxOptions.addArguments("--width=" + resolution[0]);
                                 firefoxOptions.addArguments("--height=" + resolution[1]);
                             } else {
-                                System.err.println("[WARN] Resolución inválida para " + device.name() +
-                                        ": " + device.getResolution());
+                                Logs.warning("Resolución inválida para " + device.name() + ": " + device.getResolution());
                             }
                         } catch (Exception e) {
-                            System.err.println("[WARN] No se pudo aplicar resolución headless en Firefox: " + e.getMessage());
+                            Logs.warning("No se pudo aplicar resolución headless en Firefox: " + e.getMessage());
                         }
                     }
                 }
@@ -143,13 +145,13 @@ public class LocalDriverManager extends BaseDriver {
                         int width = Integer.parseInt(resolution[0]);
                         int height = Integer.parseInt(resolution[1]);
                         driver.manage().window().setSize(new Dimension(width, height));
-                        System.out.println("[INFO] Resolución aplicada a Firefox: " + device.getResolution());
+                        Logs.info("Resolución aplicada a Firefox: " + device.getResolution());
                     } catch (Exception e) {
-                        System.err.println("[WARN] No se pudo aplicar la resolución para Firefox: " + e.getMessage());
+                        Logs.warning("No se pudo aplicar la resolución para Firefox: " + e.getMessage());
                     }
                 }
-
-                System.out.println("[INFO] Firefox lanzado con perfil: " + device.name());
+                Logs.info("Firefox lanzado con perfil: " + device.name());
+                break;
             }
             case "safari" -> {
                 throw new IllegalStateException("[ERROR] Safari solo está disponible en macOS.");

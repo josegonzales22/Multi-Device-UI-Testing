@@ -1,7 +1,10 @@
-package com.threebrowsers.selenium.drivers;
+package com.threebrowsers.selenium.drivers.mac;
 
-import org.openqa.selenium.WebDriver;
+import com.threebrowsers.selenium.drivers.DeviceProfile;
+import com.threebrowsers.selenium.drivers.LocalDriverManager;
+import com.threebrowsers.selenium.utils.Logs;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.safari.SafariOptions;
 
@@ -17,17 +20,17 @@ public class LocalDriverManagerMac extends LocalDriverManager {
     @Override
     public WebDriver createDriver() {
         if (!System.getProperty("os.name").toLowerCase().contains("mac")) {
-            throw new IllegalStateException("[ERROR] Este driver solo es válido en macOS.");
+            Logs.warning("SafariDriver solo es válido en macOS.");
         }
 
         if (super.headless) {
-            System.err.println("[WARN] Safari NO soporta headless. Ignorando parámetro.");
+            Logs.warning("Safari NO soporta headless. Ignorando parámetro.");
         }
 
         SafariOptions safariOptions = new SafariOptions();
         WebDriver driver = new SafariDriver(safariOptions);
 
-        System.out.println("[INFO] SafariDriver iniciado en macOS.");
+        Logs.info("SafariDriver iniciado en macOS.");
 
         // Aplicar resolución si se pasa DeviceProfile
         if (device != null) {
@@ -36,9 +39,9 @@ public class LocalDriverManagerMac extends LocalDriverManager {
                 int width = Integer.parseInt(res[0]);
                 int height = Integer.parseInt(res[1]);
                 driver.manage().window().setSize(new Dimension(width, height));
-                System.out.println("[INFO] Resolución aplicada a Safari: " + device.getResolution());
+                Logs.info("Resolución aplicada a Safari: " + device.getResolution());
             } catch (Exception e) {
-                System.err.println("[WARN] No se pudo aplicar resolución en Safari: " + e.getMessage());
+                Logs.error("[WARN] No se pudo aplicar resolución en Safari: " + e.getMessage());
             }
         }
 

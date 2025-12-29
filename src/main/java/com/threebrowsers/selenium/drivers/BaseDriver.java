@@ -1,6 +1,7 @@
 package com.threebrowsers.selenium.drivers;
 
 import org.openqa.selenium.WebDriver;
+
 import java.time.Duration;
 
 public abstract class BaseDriver {
@@ -23,4 +24,9 @@ public abstract class BaseDriver {
             driver.quit();
         }
     }
+
+    private boolean isMacOS() {
+        return System.getProperty("os.name").toLowerCase().contains("mac");
+    }
+
 }

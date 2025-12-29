@@ -8,14 +8,13 @@ import com.threebrowsers.selenium.reports.ExtentReportManager;
 import com.threebrowsers.selenium.steps.StepsFlow;
 import com.threebrowsers.selenium.utils.ConfigReader;
 import com.threebrowsers.selenium.utils.FileUtil;
+import com.threebrowsers.selenium.utils.Logs;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.WebDriver;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseTest {
@@ -37,7 +36,7 @@ public abstract class BaseTest {
 
     @BeforeAll
     void globalSetup() {
-        System.out.println("[INFO] Limpiando carpetas y cargando configuraciones...");
+        Logs.info("Limpiando carpetas y cargando configuraciones...");
 
         FileUtil.deleteFolder(new File("reports"));
         FileUtil.deleteFolder(new File("images"));
@@ -53,14 +52,14 @@ public abstract class BaseTest {
         baseUrlLocal = localConfig.get("base.url");
         baseUrlRemote = remoteConfig.get("base.url");
 
-        System.out.println("[INFO] Configuración global completada.");
+        Logs.info("Configuración global completada.");
     }
 
     @BeforeEach
     void setupTest(TestInfo info) {
         if (info.getTestMethod().isPresent() &&
                 info.getTestMethod().get().isAnnotationPresent(Disabled.class)) {
-            System.out.println("[INFO] Test deshabilitado: " + info.getDisplayName());
+            Logs.info("Test deshabilitado: " + info.getDisplayName());
         }
     }
 
@@ -68,7 +67,7 @@ public abstract class BaseTest {
     void tearDownTest() {
         if (driver != null) {
             driver.quit();
-            System.out.println("[INFO] Driver cerrado.");
+            Logs.info("Driver cerrado.");
         }
     }
 
@@ -77,9 +76,8 @@ public abstract class BaseTest {
         ExtentReportManager.closeReport();
     }
 
-    void isMacOS() {
-        boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
-        assumeTrue(isMac, "Safari solo se ejecuta en macOS");
+    public boolean isMacOS() {
+        return System.getProperty("os.name").toLowerCase().contains("mac");
     }
 
     private ExtentTest getOrCreateBrowserGroup(String browserKey) {
@@ -107,11 +105,11 @@ public abstract class BaseTest {
 
         } catch (Exception e) {
             test.fail("[ERROR] " + e.getMessage());
-            System.err.println("[ERROR] " + e.getMessage());
+            Logs.error(e.getMessage());
         } finally {
             if (driver != null) {
                 driver.quit();
-                System.out.println("[INFO] Finalizó ejecución en " + currentBrowser.toUpperCase());
+                Logs.info("Finalizó ejecución en " + currentBrowser.toUpperCase());
             }
         }
     }
