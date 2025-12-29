@@ -46,6 +46,14 @@ soportando ejecución en:
 mvn clean test
 ```
 
+### 🔹 Comando por grupos
+
+Por ejemplo:
+
+```bash
+mvn clean test -Dgroups="desktop"
+```
+
 ### 🔹 Estructura de ejecución multi-dispositivo
 
 El test suite ejecuta cada navegador en los siguientes perfiles:
