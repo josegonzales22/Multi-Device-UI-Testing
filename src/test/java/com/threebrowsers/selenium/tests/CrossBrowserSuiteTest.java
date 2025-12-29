@@ -9,6 +9,8 @@ import com.threebrowsers.selenium.drivers.DeviceProfile;
 import com.threebrowsers.selenium.drivers.LocalDriverManager;
 import com.threebrowsers.selenium.drivers.RemoteDriverManager;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CrossBrowserSuiteTest extends BaseTest {
@@ -124,6 +126,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
     @Order(10)
     @Safari
     @Desktop
+    @EnabledOnOs(OS.MAC)
     @DisplayName("Safari Desktop")
     void testSafariDesktop() throws InterruptedException {
         String currentBrowser = "safari";
@@ -142,6 +145,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
     @Order(11)
     @Safari
     @Tablet
+    @EnabledOnOs(OS.MAC)
     @DisplayName("Safari Tablet")
     void testSafariTablet() throws InterruptedException {
         String currentBrowser = "safari";
@@ -160,7 +164,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
     @Remote
     @Desktop
     @DisplayName("Safari Cloud Desktop")
-    @Disabled("No Credentials")
+        //@Disabled("No Credentials")
     void testSafariCloudDesktop() throws InterruptedException {
         String currentBrowser = "safari cloud";
         DeviceProfile device = DeviceProfile.DESKTOP;
@@ -173,7 +177,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
     @Remote
     @Tablet
     @DisplayName("Safari Cloud Tablet")
-    @Disabled("No Credentials")
+        //@Disabled("No Credentials")
     void testSafariCloudTablet() throws InterruptedException {
         String currentBrowser = "safari cloud";
         DeviceProfile device = DeviceProfile.TABLET;
