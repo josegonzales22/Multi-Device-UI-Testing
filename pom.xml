@@ -2,13 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <groupId>com.threebrowsers.selenium</groupId>
-    <artifactId>selenium-automation</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <name>Selenium Automation Framework</name>
-
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -23,7 +16,20 @@
         <extentreports.version>5.1.1</extentreports.version>
         <commons.io.version>2.16.1</commons.io.version>
         <aspectj.version>1.9.25.1</aspectj.version>
+        <repository-url>github.com/josegonzales22/Multi-Device-UI-Testing</repository-url>
+
+        <project-name>Multi Device UI Testing</project-name>
+
+        <maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
+        <current.year>${maven.build.timestamp}</current.year>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.threebrowsers.selenium</groupId>
+    <artifactId>selenium-automation</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>${project-name}</name>
 
     <dependencies>
         <!-- Selenium WebDriver -->
@@ -125,6 +131,60 @@
                     </argLine>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.21.0</version>
+            </plugin>
         </plugins>
     </build>
+    <description>
+        Advanced framework for automated functional testing with multi-browser and multi-device execution, allowing
+        validation of the same flow across three interface sizes per browser: Desktop, Tablet, and Mobile. It includes
+        support for local and remote execution, as well as automatic generation of HTML reports with a dashboard. This
+        project is built on a robust architecture using Selenium WebDriver + JUnit 5 + Maven, supporting execution in:
+        Chrome, Edge, Firefox, Safari (local only on macOS or remote via RemoteWebDriver), and Remote WebDriver
+        (Selenium Grid, Selenoid, BrowserStack, LambdaTest, etc.).
+    </description>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>file:///${project.basedir}/LICENSE</url>
+            <distribution>repo</distribution>
+            <comments>Copyright ${current.year} Jose Fabricio Gonzales Lamas</comments>
+        </license>
+    </licenses>
+
+    <url>https://${repository-url}</url>
+
+    <scm>
+        <connection>scm:git:git:${repository-url}</connection>
+        <developerConnection>scm:git:ssh://${repository-url}</developerConnection>
+        <url>https://${repository-url}</url>
+    </scm>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.9.0</version>
+                <configuration>
+                    <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>summary</report>
+                            <report>dependencies</report>
+                            <report>licenses</report>
+                            <report>modules</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+
+    </reporting>
 </project>
