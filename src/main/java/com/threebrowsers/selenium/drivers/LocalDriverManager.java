@@ -1,7 +1,6 @@
 package com.threebrowsers.selenium.drivers;
 
 import com.threebrowsers.selenium.utils.Logs;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -10,9 +9,6 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class LocalDriverManager extends BaseDriver {
 
@@ -28,18 +24,8 @@ public class LocalDriverManager extends BaseDriver {
 
     @Override
     public WebDriver createDriver() {
-        String os = System.getProperty("os.name").toLowerCase();
-        boolean isMac = os.contains("mac");
         switch (browser) {
             case "chrome" -> {
-                if (isMac) {
-                    WebDriverManager.chromedriver()
-                            .setup();
-                } else {
-                    WebDriverManager.chromedriver()
-                            .browserVersion("latest")
-                            .setup();
-                }
                 ChromeOptions chromeOptions = new ChromeOptions();
                 java.util.Map<String, Object> prefs = new java.util.HashMap<>();
                 prefs.put("credentials_enable_service", false);
@@ -50,37 +36,21 @@ public class LocalDriverManager extends BaseDriver {
                 chromeOptions.addArguments("--disable-popup-blocking");
 
                 if (device != null) {
-                    chromeOptions.addArguments("--user-agent=" + device.getUserAgent());
-                    String resolution = device.getResolution().replace("x", ",");
-                    chromeOptions.addArguments("--window-size=" + resolution);
+                    if (device.name().equalsIgnoreCase("DESKTOP")) {
+                        chromeOptions.addArguments("--start-maximized");
+                    } else {
+                        chromeOptions.addArguments("--user-agent=" + device.getUserAgent());
+                        chromeOptions.addArguments("--window-size=" + device.getResolution().replace("x", ","));
+                    }
                 }
 
-                if (headless) {
-                    chromeOptions.addArguments("--headless=new", "--disable-gpu");
-                }
+                if (headless) chromeOptions.addArguments("--headless=new", "--disable-gpu");
 
                 driver = new ChromeDriver(chromeOptions);
                 Logs.info("Chrome lanzado con perfil: " + device.name());
-                break;
             }
 
             case "edge" -> {
-                try {
-                    URL driverUrl = new URL("https://msedgedriver.microsoft.com/");
-                    if (isMac) {
-                        WebDriverManager.edgedriver()
-                                .driverRepositoryUrl(driverUrl)
-                                .setup();
-                    } else {
-                        WebDriverManager.edgedriver()
-                                .browserVersion("latest")
-                                .driverRepositoryUrl(driverUrl)
-                                .setup();
-                    }
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException("[ERROR] URL mal formada para el repositorio del Edge driver.", e);
-                }
-
                 EdgeOptions edgeOptions = new EdgeOptions();
                 java.util.Map<String, Object> edgePrefs = new java.util.HashMap<>();
                 edgePrefs.put("credentials_enable_service", false);
@@ -89,26 +59,21 @@ public class LocalDriverManager extends BaseDriver {
                 edgeOptions.setExperimentalOption("prefs", edgePrefs);
 
                 if (device != null) {
-                    edgeOptions.addArguments("--user-agent=" + device.getUserAgent());
-                    String resolution = device.getResolution().replace("x", ",");
-                    edgeOptions.addArguments("--window-size=" + resolution);
+                    if (device.name().equalsIgnoreCase("DESKTOP")) {
+                        edgeOptions.addArguments("--start-maximized");
+                    } else {
+                        edgeOptions.addArguments("--user-agent=" + device.getUserAgent());
+                        edgeOptions.addArguments("--window-size=" + device.getResolution().replace("x", ","));
+                    }
                 }
 
-                if (headless) {
-                    edgeOptions.addArguments("--headless=new", "--disable-gpu");
-                }
+                if (headless) edgeOptions.addArguments("--headless=new", "--disable-gpu");
 
                 driver = new EdgeDriver(edgeOptions);
                 Logs.info("Edge lanzado con perfil: " + device.name());
-                break;
             }
 
             case "firefox" -> {
-                if (isMac) {
-                    WebDriverManager.firefoxdriver().setup();
-                } else {
-                    WebDriverManager.firefoxdriver().browserVersion("latest").setup();
-                }
                 FirefoxOptions firefoxOptions = new FirefoxOptions();
                 firefoxOptions.addPreference("signon.rememberSignons", false);
                 firefoxOptions.addPreference("signon.autofillForms", false);
@@ -117,44 +82,25 @@ public class LocalDriverManager extends BaseDriver {
 
                 if (device != null) {
                     firefoxOptions.addPreference("general.useragent.override", device.getUserAgent());
-
                     if (headless) {
-                        try {
-                            String[] resolution = device.getResolution().split("x");
-                            if (resolution.length == 2) {
-                                firefoxOptions.addArguments("--width=" + resolution[0]);
-                                firefoxOptions.addArguments("--height=" + resolution[1]);
-                            } else {
-                                Logs.warning("Resolución inválida para " + device.name() + ": " + device.getResolution());
-                            }
-                        } catch (Exception e) {
-                            Logs.warning("No se pudo aplicar resolución headless en Firefox: " + e.getMessage());
-                        }
+                        String[] res = device.getResolution().split("x");
+                        firefoxOptions.addArguments("--width=" + res[0], "--height=" + res[1]);
                     }
                 }
 
-                if (headless) {
-                    firefoxOptions.addArguments("--headless");
-                }
+                if (headless) firefoxOptions.addArguments("--headless");
 
                 driver = new FirefoxDriver(firefoxOptions);
 
                 if (device != null && !headless) {
-                    try {
-                        String[] resolution = device.getResolution().split("x");
-                        int width = Integer.parseInt(resolution[0]);
-                        int height = Integer.parseInt(resolution[1]);
-                        driver.manage().window().setSize(new Dimension(width, height));
-                        Logs.info("Resolución aplicada a Firefox: " + device.getResolution());
-                    } catch (Exception e) {
-                        Logs.warning("No se pudo aplicar la resolución para Firefox: " + e.getMessage());
+                    if (device.name().equalsIgnoreCase("DESKTOP")) {
+                        driver.manage().window().maximize();
+                    } else {
+                        String[] res = device.getResolution().split("x");
+                        driver.manage().window().setSize(new Dimension(Integer.parseInt(res[0]), Integer.parseInt(res[1])));
                     }
                 }
                 Logs.info("Firefox lanzado con perfil: " + device.name());
-                break;
-            }
-            case "safari" -> {
-                throw new IllegalStateException("[ERROR] Safari solo está disponible en macOS.");
             }
             default -> throw new IllegalArgumentException("[ERROR] Navegador no soportado: " + browser);
         }

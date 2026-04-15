@@ -1,9 +1,18 @@
 package com.threebrowsers.selenium.tests;
 
-import annotations.browsers.*;
-import annotations.devices.Desktop;
-import annotations.devices.Mobile;
-import annotations.devices.Tablet;
+import annotations.browsers.chrome.ChromeDesktop;
+import annotations.browsers.chrome.ChromeTablet;
+import annotations.browsers.chrome.ChromeMobile;
+import annotations.browsers.edge.EdgeDesktop;
+import annotations.browsers.edge.EdgeTablet;
+import annotations.browsers.edge.EdgeMobile;
+import annotations.browsers.firefox.FirefoxDesktop;
+import annotations.browsers.firefox.FirefoxTablet;
+import annotations.browsers.firefox.FirefoxMobile;
+import annotations.browsers.safari.SafariLocalDesktop;
+import annotations.browsers.safari.SafariLocalTablet;
+import annotations.browsers.safari.SafariCloudDesktop;
+import annotations.browsers.safari.SafariCloudTablet;
 import com.threebrowsers.selenium.drivers.BaseDriver;
 import com.threebrowsers.selenium.drivers.DeviceProfile;
 import com.threebrowsers.selenium.drivers.LocalDriverManager;
@@ -16,8 +25,7 @@ import org.junit.jupiter.api.condition.OS;
 public class CrossBrowserSuiteTest extends BaseTest {
     @Test
     @Order(1)
-    @Chrome
-    @Desktop
+    @ChromeDesktop
     @DisplayName("Chrome Desktop")
     void testChromeDesktop() throws InterruptedException {
         String currentBrowser = "chrome";
@@ -28,8 +36,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(2)
-    @Chrome
-    @Tablet
+    @ChromeTablet
     @DisplayName("Chrome Tablet")
     void testChromeTablet() throws InterruptedException {
         String currentBrowser = "chrome";
@@ -40,8 +47,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(3)
-    @Chrome
-    @Mobile
+    @ChromeMobile
     @DisplayName("Chrome Mobile")
     void testChromeMobile() throws InterruptedException {
         String currentBrowser = "chrome";
@@ -52,8 +58,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(4)
-    @Edge
-    @Desktop
+    @EdgeDesktop
     @DisplayName("Edge Desktop")
     void testEdgeDesktop() throws InterruptedException {
         String currentBrowser = "edge";
@@ -64,8 +69,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(5)
-    @Edge
-    @Tablet
+    @EdgeTablet
     @DisplayName("Edge Tablet")
     void testEdgeTablet() throws InterruptedException {
         String currentBrowser = "edge";
@@ -76,8 +80,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(6)
-    @Edge
-    @Mobile
+    @EdgeMobile
     @DisplayName("Edge Mobile")
     void testEdgeMobile() throws InterruptedException {
         String currentBrowser = "edge";
@@ -88,8 +91,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(7)
-    @Firefox
-    @Desktop
+    @FirefoxDesktop
     @DisplayName("Firefox Desktop")
     void testFirefoxDesktop() throws InterruptedException {
         String currentBrowser = "firefox";
@@ -100,8 +102,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(8)
-    @Firefox
-    @Tablet
+    @FirefoxTablet
     @DisplayName("Firefox Tablet")
     void testFirefoxTablet() throws InterruptedException {
         String currentBrowser = "firefox";
@@ -112,8 +113,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(9)
-    @Firefox
-    @Mobile
+    @FirefoxMobile
     @DisplayName("Firefox Mobile")
     void testFirefoxMobile() throws InterruptedException {
         String currentBrowser = "firefox";
@@ -124,8 +124,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(10)
-    @Safari
-    @Desktop
+    @SafariLocalDesktop
     @EnabledOnOs(OS.MAC)
     @DisplayName("Safari Desktop")
     void testSafariDesktop() throws InterruptedException {
@@ -143,8 +142,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(11)
-    @Safari
-    @Tablet
+    @SafariLocalTablet
     @EnabledOnOs(OS.MAC)
     @DisplayName("Safari Tablet")
     void testSafariTablet() throws InterruptedException {
@@ -161,8 +159,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(12)
-    @Remote
-    @Desktop
+    @SafariCloudDesktop
     @DisplayName("Safari Cloud Desktop")
         //@Disabled("No Credentials")
     void testSafariCloudDesktop() throws InterruptedException {
@@ -174,8 +171,7 @@ public class CrossBrowserSuiteTest extends BaseTest {
 
     @Test
     @Order(13)
-    @Remote
-    @Tablet
+    @SafariCloudTablet
     @DisplayName("Safari Cloud Tablet")
         //@Disabled("No Credentials")
     void testSafariCloudTablet() throws InterruptedException {

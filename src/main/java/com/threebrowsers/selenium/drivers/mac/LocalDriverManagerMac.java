@@ -20,17 +20,17 @@ public class LocalDriverManagerMac extends LocalDriverManager {
     @Override
     public WebDriver createDriver() {
         if (!System.getProperty("os.name").toLowerCase().contains("mac")) {
-            Logs.warning("SafariDriver solo es válido en macOS.");
+            Logs.warning("SafariDriver is only valid on macOS.");
         }
 
         if (super.headless) {
-            Logs.warning("Safari NO soporta headless. Ignorando parámetro.");
+            Logs.warning("Safari does not support headless browsing. Ignoring parameter.");
         }
 
         SafariOptions safariOptions = new SafariOptions();
         WebDriver driver = new SafariDriver(safariOptions);
 
-        Logs.info("SafariDriver iniciado en macOS.");
+        Logs.info("SafariDriver launched on macOS.");
 
         // Aplicar resolución si se pasa DeviceProfile
         if (device != null) {
@@ -39,9 +39,9 @@ public class LocalDriverManagerMac extends LocalDriverManager {
                 int width = Integer.parseInt(res[0]);
                 int height = Integer.parseInt(res[1]);
                 driver.manage().window().setSize(new Dimension(width, height));
-                Logs.info("Resolución aplicada a Safari: " + device.getResolution());
+                Logs.info("Resolution applied to Safari: " + device.getResolution());
             } catch (Exception e) {
-                Logs.error("[WARN] No se pudo aplicar resolución en Safari: " + e.getMessage());
+                Logs.error("Resolution could not be applied in Safari: " + e.getMessage());
             }
         }
 

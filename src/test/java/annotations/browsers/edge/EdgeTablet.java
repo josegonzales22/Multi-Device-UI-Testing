@@ -1,11 +1,11 @@
-package annotations.devices;
+package annotations.browsers.edge;
 
 import org.junit.jupiter.api.Tag;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-@Tag("desktop")
+@Tag("edge_tablet")
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface Desktop {
+public @interface EdgeTablet {
 }
