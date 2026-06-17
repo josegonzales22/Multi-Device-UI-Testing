@@ -5,7 +5,6 @@ import com.aventstack.extentreports.ExtentTest;
 import com.threebrowsers.selenium.drivers.BaseDriver;
 import com.threebrowsers.selenium.drivers.DeviceProfile;
 import com.threebrowsers.selenium.reports.ExtentReportManager;
-import com.threebrowsers.selenium.steps.StepsFlow;
 import com.threebrowsers.selenium.utils.ConfigReader;
 import com.threebrowsers.selenium.utils.FileUtil;
 import com.threebrowsers.selenium.utils.Logs;
@@ -13,8 +12,6 @@ import org.junit.jupiter.api.*;
 import org.openqa.selenium.WebDriver;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseTest {
@@ -23,7 +20,7 @@ public abstract class BaseTest {
     protected ConfigReader localConfig;
     protected ConfigReader remoteConfig;
 
-    protected ExtentTest test;
+    protected ExtentTest suiteParentTest;
     protected WebDriver driver;
 
     protected Boolean headlessLocal;
@@ -32,11 +29,9 @@ public abstract class BaseTest {
     protected String baseUrlLocal;
     protected String baseUrlRemote;
 
-    private Map<String, ExtentTest> browserGroups = new HashMap<>();
-
     @BeforeAll
     void globalSetup() {
-        Logs.info("Limpiando carpetas y cargando configuraciones...");
+        Logs.info("Cleaning folders and loading settings...");
 
         FileUtil.deleteFolder(new File("reports"));
         FileUtil.deleteFolder(new File("images"));
@@ -52,22 +47,25 @@ public abstract class BaseTest {
         baseUrlLocal = localConfig.get("base.url");
         baseUrlRemote = remoteConfig.get("base.url");
 
-        Logs.info("Configuración global completada.");
+        String suiteName = this.getClass().getSimpleName().replaceAll("([A-Z])", " $1").trim();
+        suiteParentTest = extent.createTest(suiteName);
+
+        Logs.info("Global configuration completed for: " + suiteName);
     }
 
     @BeforeEach
-    void setupTest(TestInfo info) {
+    void beforeTest(TestInfo info) {
         if (info.getTestMethod().isPresent() &&
                 info.getTestMethod().get().isAnnotationPresent(Disabled.class)) {
-            Logs.info("Test deshabilitado: " + info.getDisplayName());
+            Logs.info("Test disabled: " + info.getDisplayName());
         }
     }
 
     @AfterEach
-    void tearDownTest() {
+    void afterTest() {
         if (driver != null) {
             driver.quit();
-            Logs.info("Driver cerrado.");
+            Logs.info("Driver closed.");
         }
     }
 
@@ -80,37 +78,45 @@ public abstract class BaseTest {
         return System.getProperty("os.name").toLowerCase().contains("mac");
     }
 
-    private ExtentTest getOrCreateBrowserGroup(String browserKey) {
-        return browserGroups.computeIfAbsent(browserKey,
-                key -> extent.createTest(key.toUpperCase()));
+    /**
+     * Sobrecarga por defecto para mantener compatibilidad si no se envía dispositivo.
+     */
+    protected void executeTest(String browserName, BaseDriver driverManager, TestFlowExecutor flowExecutor) {
+        executeTest(browserName, null, driverManager, flowExecutor);
     }
 
-    void executeTest(String currentBrowser, DeviceProfile device, BaseDriver driverManager) {
+    /**
+     * Ejecuta la prueba creando un nodo hijo que incluye el Navegador y el Tamaño/Perfil de dispositivo.
+     */
+    protected void executeTest(String browserName, DeviceProfile device, BaseDriver driverManager, TestFlowExecutor flowExecutor) {
+        ExtentTest browserNode = null;
+
+        String nodeName = browserName.toUpperCase();
+        if (device != null) {
+            nodeName += " - " + device.name();
+        }
+
         try {
-            // Crear el grupo SOLO SI SE EJECUTA EL TEST
-            ExtentTest browserGroup = getOrCreateBrowserGroup(currentBrowser.toLowerCase());
-
-            // Crear nodo del test
-            test = browserGroup.createNode("[" + device.name() + "] " + currentBrowser.toUpperCase());
-
+            browserNode = suiteParentTest.createNode(nodeName);
             driver = driverManager.createDriver();
 
-            StepsFlow steps = new StepsFlow(
-                    driver,
-                    currentBrowser.toUpperCase() + "_" + device.name().toUpperCase(),
-                    test
-            );
-
-            steps.executeFlow(baseUrlLocal);
+            flowExecutor.execute(driver, browserNode);
 
         } catch (Exception e) {
-            test.fail("[ERROR] " + e.getMessage());
+            if (browserNode != null) {
+                browserNode.fail("[ERROR] " + e.getMessage());
+            }
             Logs.error(e.getMessage());
         } finally {
             if (driver != null) {
                 driver.quit();
-                Logs.info("Finalizó ejecución en " + currentBrowser.toUpperCase());
+                Logs.info("Execution ended in " + nodeName);
             }
         }
+    }
+
+    @FunctionalInterface
+    public interface TestFlowExecutor {
+        void execute(WebDriver driver, ExtentTest test) throws Exception;
     }
 }

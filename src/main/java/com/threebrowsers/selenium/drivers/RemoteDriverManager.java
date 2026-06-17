@@ -2,11 +2,11 @@ package com.threebrowsers.selenium.drivers;
 
 import com.threebrowsers.selenium.utils.ConfigReader;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,8 +70,8 @@ public class RemoteDriverManager extends BaseDriver {
 
                 System.out.println(
                         "[INFO] LambdaTest → " + browser +
-                        " | " + device.name() +
-                        " | " + device.getResolution()
+                                " | " + device.name() +
+                                " | " + device.getResolution()
                 );
             }
             // ==================================================
@@ -104,7 +104,7 @@ public class RemoteDriverManager extends BaseDriver {
         setupDriver(driver);
         return driver;
     }
-    
+
     private String normalizeResolutionForLambda(String resolution) {
         if (resolution == null) return null;
         return resolution.replace(",", "x");

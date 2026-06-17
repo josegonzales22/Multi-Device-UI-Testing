@@ -35,19 +35,14 @@ public class LocalDriverManager extends BaseDriver {
                 chromeOptions.addArguments("--disable-notifications");
                 chromeOptions.addArguments("--disable-popup-blocking");
 
-                if (device != null) {
-                    if (device.name().equalsIgnoreCase("DESKTOP")) {
-                        chromeOptions.addArguments("--start-maximized");
-                    } else {
-                        chromeOptions.addArguments("--user-agent=" + device.getUserAgent());
-                        chromeOptions.addArguments("--window-size=" + device.getResolution().replace("x", ","));
-                    }
+                if (device != null && !device.name().equalsIgnoreCase("DESKTOP")) {
+                    chromeOptions.addArguments("--user-agent=" + device.getUserAgent());
                 }
 
                 if (headless) chromeOptions.addArguments("--headless=new", "--disable-gpu");
 
                 driver = new ChromeDriver(chromeOptions);
-                Logs.info("Chrome lanzado con perfil: " + device.name());
+                Logs.info("Chrome launched with profile: " + device.name());
             }
 
             case "edge" -> {
@@ -58,19 +53,14 @@ public class LocalDriverManager extends BaseDriver {
                 edgePrefs.put("profile.password_manager_leak_detection", false);
                 edgeOptions.setExperimentalOption("prefs", edgePrefs);
 
-                if (device != null) {
-                    if (device.name().equalsIgnoreCase("DESKTOP")) {
-                        edgeOptions.addArguments("--start-maximized");
-                    } else {
-                        edgeOptions.addArguments("--user-agent=" + device.getUserAgent());
-                        edgeOptions.addArguments("--window-size=" + device.getResolution().replace("x", ","));
-                    }
+                if (device != null && !device.name().equalsIgnoreCase("DESKTOP")) {
+                    edgeOptions.addArguments("--user-agent=" + device.getUserAgent());
                 }
 
                 if (headless) edgeOptions.addArguments("--headless=new", "--disable-gpu");
 
                 driver = new EdgeDriver(edgeOptions);
-                Logs.info("Edge lanzado con perfil: " + device.name());
+                Logs.info("Edge launched with profile: " + device.name());
             }
 
             case "firefox" -> {
@@ -82,30 +72,29 @@ public class LocalDriverManager extends BaseDriver {
 
                 if (device != null) {
                     firefoxOptions.addPreference("general.useragent.override", device.getUserAgent());
-                    if (headless) {
-                        String[] res = device.getResolution().split("x");
-                        firefoxOptions.addArguments("--width=" + res[0], "--height=" + res[1]);
-                    }
                 }
 
                 if (headless) firefoxOptions.addArguments("--headless");
 
                 driver = new FirefoxDriver(firefoxOptions);
-
-                if (device != null && !headless) {
-                    if (device.name().equalsIgnoreCase("DESKTOP")) {
-                        driver.manage().window().maximize();
-                    } else {
-                        String[] res = device.getResolution().split("x");
-                        driver.manage().window().setSize(new Dimension(Integer.parseInt(res[0]), Integer.parseInt(res[1])));
-                    }
-                }
-                Logs.info("Firefox lanzado con perfil: " + device.name());
+                Logs.info("Firefox launched with profile: " + device.name());
             }
-            default -> throw new IllegalArgumentException("[ERROR] Navegador no soportado: " + browser);
+            default -> throw new IllegalArgumentException("[ERROR] Browser not supported: " + browser);
+        }
+        setupDriver(driver);
+
+        if (device != null) {
+            if (device.name().equalsIgnoreCase("DESKTOP")) {
+                driver.manage().window().maximize();
+            } else {
+                String[] res = device.getResolution().split("x");
+                int width = Integer.parseInt(res[0]);
+                int height = Integer.parseInt(res[1]);
+
+                driver.manage().window().setSize(new Dimension(width, height));
+            }
         }
 
-        setupDriver(driver);
         return driver;
     }
 }

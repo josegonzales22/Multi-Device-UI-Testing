@@ -74,9 +74,9 @@ public class BasePage {
     public void waitForElementToLoad(By elementLocator, String pageName) {
         try {
             waitVisible(elementLocator);
-            Logs.info("Elemento de la página [" + pageName + "] cargado correctamente.");
+            Logs.info("[INFO] Elemento de la página [" + pageName + "] cargado correctamente.");
         } catch (Exception e) {
-            Logs.error("No se pudo cargar la página [" + pageName + "]: " + e.getMessage());
+            Logs.error("[ERROR] No se pudo cargar la página [" + pageName + "]: " + e.getMessage());
         }
     }
 }

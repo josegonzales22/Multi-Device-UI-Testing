@@ -5,7 +5,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 public class NavigatePage extends BasePage {
-    // Selectores corregidos y optimizados
     private final By menuButton = By.xpath("//button[.//text()[contains(., 'menu')]]");
     private final By componentButtonPage = By.xpath("(//a[contains(@href, '/components')])[1]");
     private final By formButtonPage = By.xpath("(//a[contains(@href, '/forms')])[1]");
@@ -34,6 +33,4 @@ public class NavigatePage extends BasePage {
         safeClick(contentButtonPage);
         waitForElementToLoad(contentButtonPage, "Contenido");
     }
-
-
 }

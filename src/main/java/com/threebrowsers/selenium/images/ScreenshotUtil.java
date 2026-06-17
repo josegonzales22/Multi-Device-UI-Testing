@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ScreenshotUtil {
+
+    // Base dentro de la carpeta reports
     private static final String BASE_DIR = "reports/images";
 
     private static final ConcurrentHashMap<String, AtomicInteger> browserCounters = new ConcurrentHashMap<>();
@@ -23,6 +25,7 @@ public class ScreenshotUtil {
             AtomicInteger counter = browserCounters.computeIfAbsent(safeBrowser, k -> new AtomicInteger(0));
             int orderNumber = counter.incrementAndGet();
 
+            // Carpeta: reports/images/{browser}
             String browserDir = BASE_DIR + File.separator + safeBrowser;
             Files.createDirectories(Paths.get(browserDir));
 
