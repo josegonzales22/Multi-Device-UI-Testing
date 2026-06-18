@@ -14,7 +14,6 @@ public abstract class BaseSteps {
         this.driver = driver;
         this.executionIdentifier = executionIdentifier;
         this.test = test;
-        ScreenshotUtil.resetCounter(executionIdentifier);
     }
 
     protected void logStepWithScreenshot(String stepName, String description) {
@@ -22,7 +21,7 @@ public abstract class BaseSteps {
         if (path != null) {
             test.info(description, MediaEntityBuilder.createScreenCaptureFromPath(path).build());
         } else {
-            test.info(description + " (Capture could not be taken)");
+            test.info(description + " (Capture could not be taken due to I/O or driver state)");
         }
     }
 

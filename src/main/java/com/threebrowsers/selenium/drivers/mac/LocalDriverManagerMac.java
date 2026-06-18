@@ -9,7 +9,12 @@ import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.safari.SafariOptions;
 
 public class LocalDriverManagerMac extends LocalDriverManager {
+
     private final DeviceProfile device;
+
+    public LocalDriverManagerMac(String browser, boolean headless) {
+        this(browser, headless, DeviceProfile.DESKTOP);
+    }
 
     public LocalDriverManagerMac(String browser, boolean headless, DeviceProfile device) {
         super(browser, headless, device);
@@ -19,31 +24,32 @@ public class LocalDriverManagerMac extends LocalDriverManager {
     @Override
     public WebDriver createDriver() {
         if (!System.getProperty("os.name").toLowerCase().contains("mac")) {
-            Logs.warning("SafariDriver is only valid on macOS");
+            Logs.warning("SafariDriver is only valid on macOS. Current OS: " + System.getProperty("os.name"));
         }
 
         if (super.headless) {
-            Logs.warning("Safari does not support headless browsing. Ignoring parameter");
+            Logs.warning("Safari does not support headless browsing native flags. Ignoring headless parameter...");
         }
 
         SafariOptions safariOptions = new SafariOptions();
-        WebDriver driver = new SafariDriver(safariOptions);
+        WebDriver localDriver = new SafariDriver(safariOptions);
 
-        Logs.info("SafariDriver launched on macOS");
+        Logs.info("SafariDriver launched on macOS using profile: " + (device != null ? device.name() : "NONE"));
 
         if (device != null) {
             try {
-                String[] res = device.getResolution().split(",");
-                int width = Integer.parseInt(res[0]);
-                int height = Integer.parseInt(res[1]);
-                driver.manage().window().setSize(new Dimension(width, height));
-                Logs.info("Resolution applied to Safari: " + device.getResolution());
+                if (device == DeviceProfile.DESKTOP) {
+                    localDriver.manage().window().maximize();
+                } else {
+                    localDriver.manage().window().setSize(new Dimension(device.getWidth(), device.getHeight()));
+                    Logs.info("Resolution applied to Safari: " + device.getResolutionString());
+                }
             } catch (Exception e) {
                 Logs.error("Resolution could not be applied in Safari: " + e.getMessage());
             }
         }
 
-        setupDriver(driver);
-        return driver;
+        setupDriver(localDriver);
+        return localDriver;
     }
 }

@@ -1,11 +1,11 @@
 package com.threebrowsers.selenium.drivers;
 
 import com.threebrowsers.selenium.utils.ConfigReader;
+import com.threebrowsers.selenium.utils.Logs;
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,90 +23,99 @@ public class RemoteDriverManager extends BaseDriver {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public WebDriver createDriver() {
+        WebDriver localDriver;
         ConfigReader config = new ConfigReader("src/main/resources/remote.properties");
 
-        String remoteUrl = config.get("remote.url");
-        String browser = config.getOrDefault("browser", "chrome");
-        String user = config.getOrDefault("remote.user", "");
-        String key = config.getOrDefault("remote.key", "");
+        Map<String, Object> rawCapabilitiesMap = new HashMap<>();
 
-        DesiredCapabilities caps = new DesiredCapabilities();
-        caps.setBrowserName(browser);
+        for (String key : config.getProperties().stringPropertyNames()) {
+            if (key.startsWith("capabilities.")) {
+                String value = config.get(key);
+                String fullPath = key.substring("capabilities.".length());
 
-        try {
-            // ==================================================
-            // 🔹 LAMBDATEST
-            // ==================================================
-            if (remoteUrl.contains("lambdatest")) {
-
-                caps.setCapability(
-                        "browserVersion",
-                        config.getOrDefault("browser.version", "latest")
-                );
-
-                caps.setCapability(
-                        "platformName",
-                        config.getOrDefault("platform.name", "macOS Ventura")
-                );
-
-                Map<String, Object> ltOptions = new HashMap<>();
-                ltOptions.put("user", user);
-                ltOptions.put("accessKey", key);
-                ltOptions.put("project", config.getOrDefault("project.name", "LambdaTest Project"));
-                ltOptions.put("build", config.getOrDefault("build.name", "Build 1"));
-                ltOptions.put("name", config.getOrDefault("test.name", "Remote Test"));
-
-                String lambdaResolution = normalizeResolutionForLambda(device.getResolution());
-                ltOptions.put("resolution", lambdaResolution);
-                ltOptions.put("userAgent", device.getUserAgent());
-
-                // Logs
-                ltOptions.put("video", true);
-                ltOptions.put("console", true);
-                ltOptions.put("network", true);
-
-                caps.setCapability("LT:Options", ltOptions);
-
-                System.out.println(
-                        "[INFO] LambdaTest → " + browser +
-                                " | " + device.name() +
-                                " | " + device.getResolution()
-                );
+                buildDynamicCapabilities(rawCapabilitiesMap, fullPath, convertValue(value));
             }
-            // ==================================================
-            // 🔹 BROWSERSTACK
-            // ==================================================
-            else if (remoteUrl.contains("browserstack")) {
-
-                Map<String, Object> bsOptions = new HashMap<>();
-                bsOptions.put("userName", user);
-                bsOptions.put("accessKey", key);
-                bsOptions.put("projectName", config.getOrDefault("project.name", "BrowserStack Demo"));
-                bsOptions.put("resolution", device.getResolution());
-                bsOptions.put("userAgent", device.getUserAgent());
-
-                caps.setCapability("bstack:options", bsOptions);
-            }
-            // ==================================================
-            // 🔹 GRID LOCAL / VM
-            // ==================================================
-            else {
-                System.out.println("[INFO] Ejecutando en Grid local o VM: " + remoteUrl);
-            }
-
-            driver = new RemoteWebDriver(new URL(remoteUrl), caps);
-
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("URL remota inválida: " + remoteUrl, e);
         }
 
-        setupDriver(driver);
-        return driver;
+        injectDeviceProfileIfApplicable(rawCapabilitiesMap);
+
+        MutableCapabilities caps = new MutableCapabilities();
+        rawCapabilitiesMap.forEach(caps::setCapability);
+
+        String remoteUrl = config.get("remote.url");
+
+        try {
+            if (remoteUrl != null && !remoteUrl.trim().isEmpty()) {
+                localDriver = new RemoteWebDriver(new URL(remoteUrl), caps);
+            } else {
+                localDriver = new RemoteWebDriver(caps);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("[CI/CD REMOTE DRIVER ERROR] Could not initialize remote session: " + e.getMessage(), e);
+        }
+
+        if (device == DeviceProfile.DESKTOP) {
+            Logs.info("Desktop profile detected. Maximizing remote window...");
+            localDriver.manage().window().maximize();
+        } else {
+            Logs.info("Mobile/Tablet profile detected. Setting window dimensions to: " + device.getResolutionString());
+            localDriver.manage().window().setSize(new org.openqa.selenium.Dimension(device.getWidth(), device.getHeight()));
+        }
+
+        setupDriver(localDriver);
+        return localDriver;
     }
 
-    private String normalizeResolutionForLambda(String resolution) {
-        if (resolution == null) return null;
-        return resolution.replace(",", "x");
+    @SuppressWarnings("unchecked")
+    private void buildDynamicCapabilities(Map<String, Object> currentMap, String path, Object value) {
+        String normalizedPath = path.replaceAll("(?i)_options", ":options");
+        String[] parts = normalizedPath.split("\\.");
+
+        if (parts.length == 1) {
+            currentMap.put(parts[0], value);
+            return;
+        }
+
+        for (int i = 0; i < parts.length - 1; i++) {
+            String part = parts[i];
+            currentMap = (Map<String, Object>) currentMap.computeIfAbsent(part, k -> new HashMap<String, Object>());
+        }
+
+        currentMap.put(parts[parts.length - 1], value);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void injectDeviceProfileIfApplicable(Map<String, Object> capsMap) {
+        if (device == null) return;
+
+        for (Map.Entry<String, Object> entry : capsMap.entrySet()) {
+            String capName = entry.getKey();
+            Object capValue = entry.getValue();
+
+            if (capValue instanceof Map) {
+                Map<String, Object> providerOptions = (Map<String, Object>) capValue;
+
+                String currentRes = device.getResolutionString();
+                String res = capName.toUpperCase().contains("LT") && currentRes != null
+                        ? currentRes.replace(",", "x")
+                        : currentRes;
+
+                providerOptions.putIfAbsent("resolution", res);
+                providerOptions.putIfAbsent("userAgent", device.getUserAgent());
+            }
+        }
+    }
+
+    private Object convertValue(String value) {
+        if (value == null) return null;
+        if (value.equalsIgnoreCase("true")) return true;
+        if (value.equalsIgnoreCase("false")) return false;
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return value;
+        }
     }
 }

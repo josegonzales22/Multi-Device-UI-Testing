@@ -1,27 +1,31 @@
 package com.threebrowsers.selenium.drivers;
 
 import org.openqa.selenium.WebDriver;
+
 import java.time.Duration;
 
 public abstract class BaseDriver {
-
-    protected WebDriver driver;
+    private static final ThreadLocal<WebDriver> driverThreadLocal = new ThreadLocal<>();
 
     public abstract WebDriver createDriver();
 
     protected void setupDriver(WebDriver driver) {
-        this.driver = driver;
+        driverThreadLocal.set(driver);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().window().maximize();
     }
 
     public WebDriver getDriver() {
-        return driver;
+        return driverThreadLocal.get();
     }
 
     public void quitDriver() {
-        if (driver != null) {
-            driver.quit();
+        WebDriver currentDriver = driverThreadLocal.get();
+        if (currentDriver != null) {
+            try {
+                currentDriver.quit();
+            } finally {
+                driverThreadLocal.remove();
+            }
         }
     }
 }

@@ -24,6 +24,8 @@ public class LocalDriverManager extends BaseDriver {
 
     @Override
     public WebDriver createDriver() {
+        WebDriver localDriver;
+
         switch (browser) {
             case "chrome" -> {
                 ChromeOptions chromeOptions = new ChromeOptions();
@@ -41,7 +43,7 @@ public class LocalDriverManager extends BaseDriver {
 
                 if (headless) chromeOptions.addArguments("--headless=new", "--disable-gpu");
 
-                driver = new ChromeDriver(chromeOptions);
+                localDriver = new ChromeDriver(chromeOptions);
                 Logs.info("Chrome launched with profile: " + device.name());
             }
 
@@ -59,7 +61,7 @@ public class LocalDriverManager extends BaseDriver {
 
                 if (headless) edgeOptions.addArguments("--headless=new", "--disable-gpu");
 
-                driver = new EdgeDriver(edgeOptions);
+                localDriver = new EdgeDriver(edgeOptions);
                 Logs.info("Edge launched with profile: " + device.name());
             }
 
@@ -76,25 +78,22 @@ public class LocalDriverManager extends BaseDriver {
 
                 if (headless) firefoxOptions.addArguments("--headless");
 
-                driver = new FirefoxDriver(firefoxOptions);
+                localDriver = new FirefoxDriver(firefoxOptions);
                 Logs.info("Firefox launched with profile: " + device.name());
             }
             default -> throw new IllegalArgumentException("[ERROR] Browser not supported: " + browser);
         }
-        setupDriver(driver);
+
+        setupDriver(localDriver);
 
         if (device != null) {
             if (device.name().equalsIgnoreCase("DESKTOP")) {
-                driver.manage().window().maximize();
+                localDriver.manage().window().maximize();
             } else {
-                String[] res = device.getResolution().split("x");
-                int width = Integer.parseInt(res[0]);
-                int height = Integer.parseInt(res[1]);
-
-                driver.manage().window().setSize(new Dimension(width, height));
+                localDriver.manage().window().setSize(new Dimension(device.getWidth(), device.getHeight()));
             }
         }
 
-        return driver;
+        return localDriver;
     }
 }

@@ -19,22 +19,21 @@ public abstract class BaseTest {
     protected ExtentReports extent;
     protected ConfigReader localConfig;
     protected ConfigReader remoteConfig;
-
     protected ExtentTest suiteParentTest;
-    protected WebDriver driver;
-
     protected Boolean headlessLocal;
     protected Boolean headlessRemote;
-
     protected String baseUrlLocal;
     protected String baseUrlRemote;
 
     @BeforeAll
     void globalSetup() {
-        Logs.info("Cleaning folders and loading settings...");
+        String suiteName = this.getClass().getSimpleName().replaceAll("([A-Z])", " $1").trim();
+        Logs.info("Starting Suite configurations for: " + suiteName);
 
-        FileUtil.deleteFolder(new File("reports"));
-        FileUtil.deleteFolder(new File("images"));
+        File reportsFolder = new File("reports");
+        if (reportsFolder.exists()) {
+            FileUtil.deleteFolder(reportsFolder);
+        }
 
         localConfig = new ConfigReader("src/main/resources/local.properties");
         remoteConfig = new ConfigReader("src/main/resources/remote.properties");
@@ -47,25 +46,15 @@ public abstract class BaseTest {
         baseUrlLocal = localConfig.get("base.url");
         baseUrlRemote = remoteConfig.get("base.url");
 
-        String suiteName = this.getClass().getSimpleName().replaceAll("([A-Z])", " $1").trim();
         suiteParentTest = extent.createTest(suiteName);
-
-        Logs.info("Global configuration completed for: " + suiteName);
+        Logs.info("Suite Parent Node successfully created for: " + suiteName);
     }
 
     @BeforeEach
     void beforeTest(TestInfo info) {
         if (info.getTestMethod().isPresent() &&
                 info.getTestMethod().get().isAnnotationPresent(Disabled.class)) {
-            Logs.info("Test disabled: " + info.getDisplayName());
-        }
-    }
-
-    @AfterEach
-    void afterTest() {
-        if (driver != null) {
-            driver.quit();
-            Logs.info("Driver closed.");
+            Logs.info("Test disabled by annotation: " + info.getDisplayName());
         }
     }
 
@@ -79,44 +68,47 @@ public abstract class BaseTest {
     }
 
     /**
-     * Sobrecarga por defecto para mantener compatibilidad si no se envía dispositivo.
+     * Ejecuta la prueba de manera aislada y paralela creando un nodo hijo mapeado por navegador y tamaño de pantalla.
      */
-    protected void executeTest(String browserName, BaseDriver driverManager, TestFlowExecutor flowExecutor) {
-        executeTest(browserName, null, driverManager, flowExecutor);
-    }
-
-    /**
-     * Ejecuta la prueba creando un nodo hijo que incluye el Navegador y el Tamaño/Perfil de dispositivo.
-     */
-    protected void executeTest(String browserName, DeviceProfile device, BaseDriver driverManager, TestFlowExecutor flowExecutor) {
+    protected void executeTest(String browserName, DeviceProfile deviceProfile, BaseDriver driverManager, TestFlowExecutor flowExecutor) {
         ExtentTest browserNode = null;
+        WebDriver threadDriver = null;
 
-        String nodeName = browserName.toUpperCase();
-        if (device != null) {
-            nodeName += " - " + device.name();
-        }
+        String cleanBrowser = browserName.toLowerCase().replaceAll("[^a-zA-Z0-9_]", "_");
+        String cleanDevice = deviceProfile.name().toLowerCase();
+        String executionIdentifier = cleanBrowser + "_" + cleanDevice;
 
         try {
+            String nodeName = browserName.toUpperCase() + " (" + deviceProfile.name() + ")";
             browserNode = suiteParentTest.createNode(nodeName);
-            driver = driverManager.createDriver();
 
-            flowExecutor.execute(driver, browserNode);
+            threadDriver = driverManager.createDriver();
+            com.threebrowsers.selenium.images.ScreenshotUtil.resetCounter(executionIdentifier);
 
-        } catch (Exception e) {
+            flowExecutor.execute(threadDriver, browserNode, executionIdentifier);
+
+        } catch (Throwable e) {
             if (browserNode != null) {
-                browserNode.fail("[ERROR] " + e.getMessage());
+                browserNode.fail("[QA FLOW FAILED] " + e.getMessage());
             }
-            Logs.error(e.getMessage());
+            Logs.error("[TEST FAILURE] Error in functional flow: " + e.getMessage());
+
+            throw new RuntimeException(e);
+
         } finally {
-            if (driver != null) {
-                driver.quit();
-                Logs.info("Execution ended in " + nodeName);
+            if (threadDriver != null) {
+                try {
+                    threadDriver.quit();
+                } catch (Exception ex) {
+                    Logs.warning("Minor error when mitigating and closing the browser process: " + ex.getMessage());
+                }
+                Logs.info("Execution completed and driver destroyed for: " + executionIdentifier.toUpperCase());
             }
         }
     }
 
     @FunctionalInterface
     public interface TestFlowExecutor {
-        void execute(WebDriver driver, ExtentTest test) throws Exception;
+        void execute(WebDriver driver, ExtentTest test, String executionIdentifier) throws Exception;
     }
 }
