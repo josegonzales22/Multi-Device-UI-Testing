@@ -28,6 +28,7 @@ public class LocalDriverManager extends BaseDriver {
 
         switch (browser) {
             case "chrome" -> {
+                System.clearProperty("SE_DRIVER_MIRROR_URL");
                 ChromeOptions chromeOptions = new ChromeOptions();
                 java.util.Map<String, Object> prefs = new java.util.HashMap<>();
                 prefs.put("credentials_enable_service", false);
@@ -48,6 +49,7 @@ public class LocalDriverManager extends BaseDriver {
             }
 
             case "edge" -> {
+                System.setProperty("SE_DRIVER_MIRROR_URL", "https://msedgedriver.microsoft.com");
                 EdgeOptions edgeOptions = new EdgeOptions();
                 java.util.Map<String, Object> edgePrefs = new java.util.HashMap<>();
                 edgePrefs.put("credentials_enable_service", false);
@@ -66,6 +68,7 @@ public class LocalDriverManager extends BaseDriver {
             }
 
             case "firefox" -> {
+                System.clearProperty("SE_DRIVER_MIRROR_URL");
                 FirefoxOptions firefoxOptions = new FirefoxOptions();
                 firefoxOptions.addPreference("signon.rememberSignons", false);
                 firefoxOptions.addPreference("signon.autofillForms", false);
